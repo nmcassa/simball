@@ -27,8 +27,8 @@ class Motion:
     phase: MotionPhase = MotionPhase.SPACING
     elapsed: float = 0.0
     phase_elapsed: float = 0.0
-    screener_number: int = 5
-    cutter_number: int = 2
+    screener_id: str = ""
+    cutter_id: str = ""
 
 
 def _roster(name: str, symbol: str, side: TeamSide) -> Team:
@@ -42,7 +42,8 @@ def _roster(name: str, symbol: str, side: TeamSide) -> Team:
     players = []
     for index, (position, height, weight, ratings, tendencies) in enumerate(profiles, 1):
         start = Vec2(12 + index * 2, 6 + index * 8)
-        players.append(Player(index, f"{name} {position}", position, height, weight, ratings, tendencies, start, start))
+        player_id = f"{side.value}-{position.lower()}"
+        players.append(Player(index, player_id, f"{name} {position}", position, height, weight, ratings, tendencies, start, start))
     return Team(name, symbol, side, players)
 
 
@@ -99,8 +100,8 @@ class Game:
             player.activity = "handling" if player.has_ball else "spacing"
             player.movement_modifier = 1.0
         handler = next(player for player in offense.players if player.has_ball)
-        screener = offense.players[self.motion.screener_number - 1]
-        cutter = offense.players[self.motion.cutter_number - 1]
+        screener = offense.player(self.motion.screener_id)
+        cutter = offense.player(self.motion.cutter_id)
         direction = 1 if attacking_right else -1
         screen_spot = Vec2(
             max(8, min(86, handler.location.x + direction * 4)),
@@ -129,7 +130,8 @@ class Game:
             defender.activity = "defending"
             defender.movement_modifier = 1.0
         if self.motion.phase in (MotionPhase.SCREENING, MotionPhase.CUTTING):
-            cutter_defender = defense.players[cutter.number - 1]
+            cutter_index = offense.players.index(cutter)
+            cutter_defender = defense.players[cutter_index]
             if cutter_defender.location.distance_to(screener.location) < 5.0:
                 cutter_defender.movement_modifier = 0.48
                 cutter_defender.activity = "fighting screen"
@@ -142,16 +144,16 @@ class Game:
             candidates = [player for player in self.state.offense_team.players if not player.has_ball]
             bigs = [player for player in candidates if player.position in ("PF", "C")]
             wings = [player for player in candidates if player.position in ("SG", "SF")]
-            self.motion.screener_number = max(bigs, key=lambda player: player.height_inches + player.weight_lb / 20).number
-            self.motion.cutter_number = max(wings or candidates, key=lambda player: player.ratings.speed).number
+            self.motion.screener_id = max(bigs, key=lambda player: player.height_inches + player.weight_lb / 20).player_id
+            self.motion.cutter_id = max(wings or candidates, key=lambda player: player.ratings.speed).player_id
             self.motion.phase = MotionPhase.SCREENING
             self.motion.phase_elapsed = 0.0
-            self._event(f"{self.state.offense_team.players[self.motion.screener_number - 1].name} comes to screen for {handler.name}")
+            self._event(f"{self.state.offense_team.player(self.motion.screener_id).name} comes to screen for {handler.name}")
         elif self.motion.phase is MotionPhase.SCREENING and self.motion.phase_elapsed >= 1.8:
             self.motion.phase = MotionPhase.CUTTING
             self.motion.phase_elapsed = 0.0
-            cutter = self.state.offense_team.players[self.motion.cutter_number - 1]
-            screener = self.state.offense_team.players[self.motion.screener_number - 1]
+            cutter = self.state.offense_team.player(self.motion.cutter_id)
+            screener = self.state.offense_team.player(self.motion.screener_id)
             self._event(f"{cutter.name} cuts as {screener.name} rolls")
         elif self.motion.phase is MotionPhase.CUTTING and self.motion.phase_elapsed >= 2.4:
             self.motion.phase = MotionPhase.RESETTING
@@ -245,7 +247,10 @@ class Game:
         self.state.offense_team.players[0].has_ball = True
         self.state.shot_clock = 24.0
         self.action_cooldown = 1.8
-        self.motion = Motion()
+        self.motion = Motion(
+            screener_id=self.state.offense_team.players[4].player_id,
+            cutter_id=self.state.offense_team.players[1].player_id,
+        )
         if not initial:
             self._event(f"{self.state.offense_team.name} possession")
 

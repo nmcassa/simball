@@ -9,6 +9,9 @@ from .models import Player, Ratings, Team, TeamSide, Tendencies, Vec2
 from .plays import Play
 
 
+POSITIONS = ("PG", "SG", "SF", "PF", "C")
+
+
 class ConfigError(ValueError):
     pass
 
@@ -44,10 +47,22 @@ def _team(data: dict[str, Any], side: TeamSide, default_symbol: str) -> Team:
     if len(players) != 5:
         raise ConfigError(f"{side.value} team must contain exactly 5 players")
     parsed = [_player(item, index) for index, item in enumerate(players, 1)]
+    player_ids = [player.player_id for player in parsed]
+    if len(set(player_ids)) != len(player_ids):
+        raise ConfigError(f"{side.value} team player IDs must be unique")
+    positions = [player.position for player in parsed]
+    if set(positions) != set(POSITIONS):
+        raise ConfigError(f"{side.value} team must contain exactly one of each position: {', '.join(POSITIONS)}")
     return Team(str(data["name"]), str(data.get("symbol", default_symbol))[:1], side, parsed)
 
 
 def _player(data: dict[str, Any], number: int) -> Player:
+    player_id = data["id"]
+    if not isinstance(player_id, str) or not player_id.strip():
+        raise ConfigError("player id must be a non-empty string")
+    position = data["position"]
+    if position not in POSITIONS:
+        raise ConfigError(f"position must be one of: {', '.join(POSITIONS)}")
     ratings_data = data["ratings"]
     tendencies_data = data["tendencies"]
     ratings = Ratings(**{name: _bounded(ratings_data[name], name, 1, 100) for name in Ratings.__dataclass_fields__})
@@ -55,7 +70,7 @@ def _player(data: dict[str, Any], number: int) -> Player:
     height = int(_bounded(data["height_inches"], "height_inches", 60, 96))
     weight = int(_bounded(data["weight_lb"], "weight_lb", 120, 400))
     start = Vec2(12 + number * 2, 6 + number * 8)
-    return Player(number, str(data["name"]), str(data["position"]), height, weight, ratings, tendencies, start, start)
+    return Player(number, player_id, str(data["name"]), position, height, weight, ratings, tendencies, start, start)
 
 
 def _play(data: dict[str, Any]) -> Play:

@@ -16,22 +16,22 @@
       "name": "Blue",
       "symbol": "X",
       "players": [
-        {"name": "Avery", "position": "PG", "height_inches": 73, "weight_lb": 180, "ratings": {"shooting": 75, "passing": 90, "defense": 72, "speed": 88, "rebounding": 45}, "tendencies": {"shoot": 0.35, "pass_ball": 0.85, "drive": 0.7}},
-        {"name": "Blake", "position": "SG", "height_inches": 77, "weight_lb": 200, "ratings": {"shooting": 90, "passing": 68, "defense": 69, "speed": 82, "rebounding": 54}, "tendencies": {"shoot": 0.85, "pass_ball": 0.4, "drive": 0.5}},
-        {"name": "Casey", "position": "SF", "height_inches": 80, "weight_lb": 218, "ratings": {"shooting": 79, "passing": 72, "defense": 78, "speed": 78, "rebounding": 69}, "tendencies": {"shoot": 0.6, "pass_ball": 0.55, "drive": 0.68}},
-        {"name": "Drew", "position": "PF", "height_inches": 82, "weight_lb": 238, "ratings": {"shooting": 71, "passing": 61, "defense": 82, "speed": 69, "rebounding": 82}, "tendencies": {"shoot": 0.44, "pass_ball": 0.48, "drive": 0.62}},
-        {"name": "Emery", "position": "C", "height_inches": 85, "weight_lb": 260, "ratings": {"shooting": 60, "passing": 56, "defense": 87, "speed": 58, "rebounding": 91}, "tendencies": {"shoot": 0.38, "pass_ball": 0.43, "drive": 0.7}}
+        {"id": "blue-avery", "name": "Avery", "position": "PG", "height_inches": 73, "weight_lb": 180, "ratings": {"shooting": 75, "passing": 90, "defense": 72, "speed": 88, "rebounding": 45}, "tendencies": {"shoot": 0.35, "pass_ball": 0.85, "drive": 0.7}},
+        {"id": "blue-blake", "name": "Blake", "position": "SG", "height_inches": 77, "weight_lb": 200, "ratings": {"shooting": 90, "passing": 68, "defense": 69, "speed": 82, "rebounding": 54}, "tendencies": {"shoot": 0.85, "pass_ball": 0.4, "drive": 0.5}},
+        {"id": "blue-casey", "name": "Casey", "position": "SF", "height_inches": 80, "weight_lb": 218, "ratings": {"shooting": 79, "passing": 72, "defense": 78, "speed": 78, "rebounding": 69}, "tendencies": {"shoot": 0.6, "pass_ball": 0.55, "drive": 0.68}},
+        {"id": "blue-drew", "name": "Drew", "position": "PF", "height_inches": 82, "weight_lb": 238, "ratings": {"shooting": 71, "passing": 61, "defense": 82, "speed": 69, "rebounding": 82}, "tendencies": {"shoot": 0.44, "pass_ball": 0.48, "drive": 0.62}},
+        {"id": "blue-emery", "name": "Emery", "position": "C", "height_inches": 85, "weight_lb": 260, "ratings": {"shooting": 60, "passing": 56, "defense": 87, "speed": 58, "rebounding": 91}, "tendencies": {"shoot": 0.38, "pass_ball": 0.43, "drive": 0.7}}
       ]
     },
     "away": {
       "name": "Gold",
       "symbol": "O",
       "players": [
-        {"name": "Flynn", "position": "PG", "height_inches": 74, "weight_lb": 185, "ratings": {"shooting": 80, "passing": 82, "defense": 75, "speed": 85, "rebounding": 48}, "tendencies": {"shoot": 0.55, "pass_ball": 0.7, "drive": 0.66}},
-        {"name": "Gray", "position": "SG", "height_inches": 76, "weight_lb": 198, "ratings": {"shooting": 84, "passing": 70, "defense": 72, "speed": 81, "rebounding": 52}, "tendencies": {"shoot": 0.78, "pass_ball": 0.42, "drive": 0.54}},
-        {"name": "Hayes", "position": "SF", "height_inches": 79, "weight_lb": 216, "ratings": {"shooting": 76, "passing": 69, "defense": 80, "speed": 77, "rebounding": 70}, "tendencies": {"shoot": 0.57, "pass_ball": 0.5, "drive": 0.67}},
-        {"name": "Indigo", "position": "PF", "height_inches": 81, "weight_lb": 235, "ratings": {"shooting": 68, "passing": 60, "defense": 84, "speed": 70, "rebounding": 84}, "tendencies": {"shoot": 0.45, "pass_ball": 0.44, "drive": 0.65}},
-        {"name": "Jules", "position": "C", "height_inches": 84, "weight_lb": 252, "ratings": {"shooting": 64, "passing": 59, "defense": 85, "speed": 62, "rebounding": 88}, "tendencies": {"shoot": 0.4, "pass_ball": 0.46, "drive": 0.69}}
+        {"id": "gold-flynn", "name": "Flynn", "position": "PG", "height_inches": 74, "weight_lb": 185, "ratings": {"shooting": 80, "passing": 82, "defense": 75, "speed": 85, "rebounding": 48}, "tendencies": {"shoot": 0.55, "pass_ball": 0.7, "drive": 0.66}},
+        {"id": "gold-gray", "name": "Gray", "position": "SG", "height_inches": 76, "weight_lb": 198, "ratings": {"shooting": 84, "passing": 70, "defense": 72, "speed": 81, "rebounding": 52}, "tendencies": {"shoot": 0.78, "pass_ball": 0.42, "drive": 0.54}},
+        {"id": "gold-hayes", "name": "Hayes", "position": "SF", "height_inches": 79, "weight_lb": 216, "ratings": {"shooting": 76, "passing": 69, "defense": 80, "speed": 77, "rebounding": 70}, "tendencies": {"shoot": 0.57, "pass_ball": 0.5, "drive": 0.67}},
+        {"id": "gold-indigo", "name": "Indigo", "position": "PF", "height_inches": 81, "weight_lb": 235, "ratings": {"shooting": 68, "passing": 60, "defense": 84, "speed": 70, "rebounding": 84}, "tendencies": {"shoot": 0.45, "pass_ball": 0.44, "drive": 0.65}},
+        {"id": "gold-jules", "name": "Jules", "position": "C", "height_inches": 84, "weight_lb": 252, "ratings": {"shooting": 64, "passing": 59, "defense": 85, "speed": 62, "rebounding": 88}, "tendencies": {"shoot": 0.4, "pass_ball": 0.46, "drive": 0.69}}
       ]
     }
   }

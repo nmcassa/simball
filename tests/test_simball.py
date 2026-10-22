@@ -74,6 +74,7 @@ class ConfigTests(unittest.TestCase):
         setup = load_setup(config_path)
         self.assertEqual(setup.home.name, "Blue")
         self.assertEqual(setup.home.players[0].name, "Avery")
+        self.assertEqual(setup.home.players[0].player_id, "blue-avery")
         self.assertEqual(setup.home.players[0].ratings.passing, 90)
         self.assertEqual(setup.plays[setup.home.side].name, "Five Out Motion")
         self.assertEqual(setup.plays[setup.away.side].name, "Horns")
@@ -85,6 +86,28 @@ class ConfigTests(unittest.TestCase):
         temporary.write_text(text, encoding="utf-8")
         try:
             with self.assertRaisesRegex(ConfigError, "shooting"):
+                load_setup(temporary)
+        finally:
+            temporary.unlink()
+
+    def test_duplicate_player_id_is_rejected(self) -> None:
+        config_path = Path(__file__).parents[1] / "configs" / "coach_example.json"
+        text = config_path.read_text(encoding="utf-8").replace('"id": "blue-blake"', '"id": "blue-avery"', 1)
+        temporary = Path(__file__).parent / "invalid_config.json"
+        temporary.write_text(text, encoding="utf-8")
+        try:
+            with self.assertRaisesRegex(ConfigError, "IDs must be unique"):
+                load_setup(temporary)
+        finally:
+            temporary.unlink()
+
+    def test_lineup_requires_one_player_at_each_position(self) -> None:
+        config_path = Path(__file__).parents[1] / "configs" / "coach_example.json"
+        text = config_path.read_text(encoding="utf-8").replace('"position": "SG"', '"position": "PG"', 1)
+        temporary = Path(__file__).parent / "invalid_config.json"
+        temporary.write_text(text, encoding="utf-8")
+        try:
+            with self.assertRaisesRegex(ConfigError, "exactly one of each position"):
                 load_setup(temporary)
         finally:
             temporary.unlink()

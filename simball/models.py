@@ -45,6 +45,7 @@ class Ratings:
 @dataclass
 class Player:
     number: int
+    player_id: str
     name: str
     position: str
     height_inches: int
@@ -74,6 +75,9 @@ class Team:
     side: TeamSide
     players: list[Player]
     score: int = 0
+
+    def player(self, player_id: str) -> Player:
+        return next(player for player in self.players if player.player_id == player_id)
 
 
 @dataclass(frozen=True)
