@@ -14,7 +14,7 @@
 - [ ] Add stable player IDs instead of relying on roster order
 - [ ] Allow teams to select multiple plays with usage frequencies
 - [ ] Support substitutions, rotations, and lineup-specific assignments
-- [ ] Add a command that validates a configuration without running a game
+- [x] Add a command that validates a configuration without running a game
 - [ ] Add configuration versioning and migration errors
 
 ## 3. Build a play system

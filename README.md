@@ -13,6 +13,12 @@ python -m simball --config configs/coach_example.json
 
 Teams, players, ratings, tendencies, and plays can be changed in the JSON configuration file.
 
+Validate a configuration without running a game:
+
+```bash
+python -m simball --config configs/coach_example.json --validate
+```
+
 ## Project direction
 
 The goal is to give coaches and basketball researchers a way to test player combinations and strategies through repeatable simulations. Future plans include:

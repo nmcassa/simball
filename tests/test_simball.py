@@ -1,6 +1,9 @@
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 
+from simball.cli import main
 from simball.config import ConfigError, load_setup
 from simball.engine import Game, GameConfig, MotionPhase
 from simball.models import Vec2
@@ -85,6 +88,19 @@ class ConfigTests(unittest.TestCase):
                 load_setup(temporary)
         finally:
             temporary.unlink()
+
+    def test_validate_command_accepts_valid_configuration_without_running_game(self) -> None:
+        config_path = Path(__file__).parents[1] / "configs" / "coach_example.json"
+        output = StringIO()
+        with redirect_stdout(output):
+            result = main(["--config", str(config_path), "--validate"])
+        self.assertEqual(result, 0)
+        self.assertIn("Configuration is valid", output.getvalue())
+
+    def test_validate_command_requires_configuration(self) -> None:
+        with self.assertRaises(SystemExit) as error:
+            main(["--validate"])
+        self.assertEqual(error.exception.code, 2)
 
 
 if __name__ == "__main__":
