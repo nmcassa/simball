@@ -1,4 +1,5 @@
 {
+  "version": 1,
   "home_plays": [
     {"play": "motion", "usage": 0.75},
     {"play": "horns", "usage": 0.25}

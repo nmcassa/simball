@@ -12,6 +12,7 @@ python -m simball --config configs/coach_example.json
 ```
 
 Teams, players, ratings, tendencies, and plays can be changed in the JSON configuration file.
+Configurations must include `"version": 1`. Simball rejects missing, obsolete, and newer unsupported versions with a migration-oriented error instead of trying to interpret an incompatible file.
 
 Each team can use a weighted playbook. Usage values are relative weights and do not need to add up to one:
 

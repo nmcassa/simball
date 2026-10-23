@@ -11,6 +11,7 @@ from .plays import Play, PlayOption
 
 
 POSITIONS = ("PG", "SG", "SF", "PF", "C")
+CONFIG_VERSION = 1
 
 
 class ConfigError(ValueError):
@@ -36,6 +37,7 @@ def load_setup(path: str | Path) -> SimulationSetup:
         raise ConfigError(f"cannot read {source}: {error}") from error
     except json.JSONDecodeError as error:
         raise ConfigError(f"invalid JSON at line {error.lineno}, column {error.colno}: {error.msg}") from error
+    _validate_version(data)
     try:
         home = _team(data["teams"]["home"], TeamSide.HOME, "X")
         away = _team(data["teams"]["away"], TeamSide.AWAY, "O")
@@ -47,6 +49,20 @@ def load_setup(path: str | Path) -> SimulationSetup:
     except (KeyError, TypeError, IndexError, StopIteration) as error:
         raise ConfigError(f"missing or invalid field: {error}") from error
     return SimulationSetup(home, away, {TeamSide.HOME: home_playbook, TeamSide.AWAY: away_playbook})
+
+
+def _validate_version(data: Any) -> None:
+    if not isinstance(data, dict):
+        raise ConfigError("configuration must be a JSON object")
+    if "version" not in data:
+        raise ConfigError("configuration version is required; add \"version\": 1")
+    version = data["version"]
+    if not isinstance(version, int) or isinstance(version, bool):
+        raise ConfigError("configuration version must be an integer")
+    if version < CONFIG_VERSION:
+        raise ConfigError(f"configuration version {version} is obsolete; migrate to version {CONFIG_VERSION}")
+    if version > CONFIG_VERSION:
+        raise ConfigError(f"configuration version {version} is newer than supported version {CONFIG_VERSION}")
 
 
 def _playbook(

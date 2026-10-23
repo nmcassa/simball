@@ -185,6 +185,30 @@ class ConfigTests(unittest.TestCase):
         with self.assertRaisesRegex(ConfigError, "duplicate play: motion"):
             self._load_data(data)
 
+    def test_configuration_version_is_required(self) -> None:
+        data = self._example_data()
+        data.pop("version")
+        with self.assertRaisesRegex(ConfigError, 'add "version": 1'):
+            self._load_data(data)
+
+    def test_obsolete_configuration_version_has_migration_error(self) -> None:
+        data = self._example_data()
+        data["version"] = 0
+        with self.assertRaisesRegex(ConfigError, "obsolete; migrate to version 1"):
+            self._load_data(data)
+
+    def test_newer_configuration_version_is_rejected(self) -> None:
+        data = self._example_data()
+        data["version"] = 2
+        with self.assertRaisesRegex(ConfigError, "newer than supported version 1"):
+            self._load_data(data)
+
+    def test_configuration_version_must_be_an_integer(self) -> None:
+        data = self._example_data()
+        data["version"] = "1"
+        with self.assertRaisesRegex(ConfigError, "version must be an integer"):
+            self._load_data(data)
+
     def _example_data(self) -> dict:
         config_path = Path(__file__).parents[1] / "configs" / "coach_example.json"
         return json.loads(config_path.read_text(encoding="utf-8"))
