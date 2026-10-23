@@ -13,6 +13,17 @@ python -m simball --config configs/coach_example.json
 
 Teams, players, ratings, tendencies, and plays can be changed in the JSON configuration file.
 
+Each team can use a weighted playbook. Usage values are relative weights and do not need to add up to one:
+
+```json
+"home_plays": [
+  {"play": "motion", "usage": 0.75},
+  {"play": "horns", "usage": 0.25}
+]
+```
+
+Play names reference entries in the top-level `plays` object. A play is selected at the start of each possession, and `--seed` makes the sequence reproducible. The singular `home_play` and `away_play` fields remain supported for one-play teams.
+
 Validate a configuration without running a game:
 
 ```bash

@@ -12,7 +12,7 @@
 
 - [ ] Publish a documented JSON schema for teams, players, and plays
 - [x] Add stable player IDs instead of relying on roster order
-- [ ] Allow teams to select multiple plays with usage frequencies
+- [x] Allow teams to select multiple plays with usage frequencies
 - [ ] Support substitutions, rotations, and lineup-specific assignments
 - [x] Add a command that validates a configuration without running a game
 - [ ] Add configuration versioning and migration errors

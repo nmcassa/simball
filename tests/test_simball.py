@@ -1,12 +1,15 @@
 import unittest
 from contextlib import redirect_stdout
 from io import StringIO
+import json
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from simball.cli import main
 from simball.config import ConfigError, load_setup
 from simball.engine import Game, GameConfig, MotionPhase
-from simball.models import Vec2
+from simball.models import TeamSide, Vec2
+from simball.plays import FIVE_OUT, HORNS, PlayOption
 from simball.render import render
 
 
@@ -67,6 +70,34 @@ class GameTests(unittest.TestCase):
         self.assertEqual(cutter_defender.activity, "fighting screen")
         self.assertLess(cutter_defender.movement_modifier, 1.0)
 
+    def test_play_is_selected_for_each_possession(self) -> None:
+        playbooks = {
+            TeamSide.HOME: (PlayOption(FIVE_OUT, 1.0),),
+            TeamSide.AWAY: (PlayOption(HORNS, 1.0),),
+        }
+        game = Game(GameConfig(seed=3), team_playbooks=playbooks)
+        self.assertIs(game.active_play, FIVE_OUT)
+        game._change_possession()
+        self.assertIs(game.active_play, HORNS)
+        self.assertEqual(game.state.events[-1].text, "Away calls Horns")
+
+    def test_seed_reproduces_weighted_play_sequence(self) -> None:
+        playbooks = {
+            side: (PlayOption(FIVE_OUT, 3.0), PlayOption(HORNS, 1.0))
+            for side in TeamSide
+        }
+
+        def sequence() -> list[str]:
+            game = Game(GameConfig(seed=14), team_playbooks=playbooks)
+            names = [game.active_play.name]
+            for _ in range(12):
+                game._change_possession()
+                names.append(game.active_play.name)
+            return names
+
+        self.assertEqual(sequence(), sequence())
+        self.assertEqual(set(sequence()), {"Five Out", "Horns"})
+
 
 class ConfigTests(unittest.TestCase):
     def test_example_loads_custom_teams_and_plays(self) -> None:
@@ -78,6 +109,7 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(setup.home.players[0].ratings.passing, 90)
         self.assertEqual(setup.plays[setup.home.side].name, "Five Out Motion")
         self.assertEqual(setup.plays[setup.away.side].name, "Horns")
+        self.assertEqual([option.usage for option in setup.playbooks[setup.home.side]], [0.75, 0.25])
 
     def test_invalid_rating_is_rejected(self) -> None:
         config_path = Path(__file__).parents[1] / "configs" / "coach_example.json"
@@ -124,6 +156,44 @@ class ConfigTests(unittest.TestCase):
         with self.assertRaises(SystemExit) as error:
             main(["--validate"])
         self.assertEqual(error.exception.code, 2)
+
+    def test_legacy_single_play_configuration_is_supported(self) -> None:
+        data = self._example_data()
+        data.pop("home_plays")
+        data.pop("away_plays")
+        data["home_play"] = "motion"
+        data["away_play"] = "horns"
+        setup = self._load_data(data)
+        self.assertEqual(setup.playbooks[TeamSide.HOME], (PlayOption(setup.plays[TeamSide.HOME], 1.0),))
+        self.assertEqual(setup.playbooks[TeamSide.AWAY], (PlayOption(setup.plays[TeamSide.AWAY], 1.0),))
+
+    def test_invalid_playbook_usage_is_rejected(self) -> None:
+        data = self._example_data()
+        data["home_plays"][0]["usage"] = 0
+        with self.assertRaisesRegex(ConfigError, "positive finite number"):
+            self._load_data(data)
+
+    def test_unknown_playbook_entry_is_rejected(self) -> None:
+        data = self._example_data()
+        data["away_plays"][0]["play"] = "transition"
+        with self.assertRaisesRegex(ConfigError, "unknown play: transition"):
+            self._load_data(data)
+
+    def test_duplicate_playbook_entry_is_rejected(self) -> None:
+        data = self._example_data()
+        data["home_plays"][1]["play"] = "motion"
+        with self.assertRaisesRegex(ConfigError, "duplicate play: motion"):
+            self._load_data(data)
+
+    def _example_data(self) -> dict:
+        config_path = Path(__file__).parents[1] / "configs" / "coach_example.json"
+        return json.loads(config_path.read_text(encoding="utf-8"))
+
+    def _load_data(self, data: dict):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "config.json"
+            path.write_text(json.dumps(data), encoding="utf-8")
+            return load_setup(path)
 
 
 if __name__ == "__main__":

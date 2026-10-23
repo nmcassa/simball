@@ -43,7 +43,7 @@ def main(argv: list[str] | None = None) -> int:
             setup = load_setup(args.config)
         except ConfigError as error:
             argument_parser.error(str(error))
-        game = Game(game_config, home=setup.home, away=setup.away, team_plays=setup.plays)
+        game = Game(game_config, home=setup.home, away=setup.away, team_playbooks=setup.playbooks)
     else:
         game = Game(game_config, PLAYS[args.play])
     render_interval = 0.2

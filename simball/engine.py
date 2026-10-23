@@ -5,7 +5,7 @@ from enum import Enum
 import random
 
 from .models import Event, GameState, Player, Ratings, Team, TeamSide, Tendencies, Vec2
-from .plays import FIVE_OUT, Play
+from .plays import FIVE_OUT, Play, PlayOption
 
 
 @dataclass(frozen=True)
@@ -55,11 +55,16 @@ class Game:
         home: Team | None = None,
         away: Team | None = None,
         team_plays: dict[TeamSide, Play] | None = None,
+        team_playbooks: dict[TeamSide, tuple[PlayOption, ...]] | None = None,
     ) -> None:
         self.config = config
         self.play = play
         self.rng = random.Random(config.seed)
-        self.team_plays = team_plays or {TeamSide.HOME: play, TeamSide.AWAY: play}
+        if team_playbooks is not None:
+            self.team_playbooks = team_playbooks
+        else:
+            plays = team_plays or {TeamSide.HOME: play, TeamSide.AWAY: play}
+            self.team_playbooks = {side: (PlayOption(team_play, 1.0),) for side, team_play in plays.items()}
         home_team = home or _roster("Home", "X", TeamSide.HOME)
         away_team = away or _roster("Away", "O", TeamSide.AWAY)
         self.state = GameState(home_team, away_team, TeamSide.HOME, config.duration_seconds, 24.0)
@@ -94,7 +99,7 @@ class Game:
         attacking_right = self.state.offense is TeamSide.HOME
         offense = self.state.offense_team
         defense = self.state.defense_team
-        active_play = self.team_plays[self.state.offense]
+        active_play = self.active_play
         for player in offense.players:
             player.target = active_play.target_for(player, attacking_right)
             player.activity = "handling" if player.has_ball else "spacing"
@@ -247,12 +252,18 @@ class Game:
         self.state.offense_team.players[0].has_ball = True
         self.state.shot_clock = 24.0
         self.action_cooldown = 1.8
+        options = self.team_playbooks[self.state.offense]
+        self.active_play = self.rng.choices(
+            [option.play for option in options],
+            weights=[option.usage for option in options],
+            k=1,
+        )[0]
         self.motion = Motion(
             screener_id=self.state.offense_team.players[4].player_id,
             cutter_id=self.state.offense_team.players[1].player_id,
         )
         if not initial:
-            self._event(f"{self.state.offense_team.name} possession")
+            self._event(f"{self.state.offense_team.name} calls {self.active_play.name}")
 
     def _event(self, text: str) -> None:
         self.state.events.append(Event(self.state.game_clock, text))

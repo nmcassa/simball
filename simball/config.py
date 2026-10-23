@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import math
 from pathlib import Path
 from typing import Any
 
 from .models import Player, Ratings, Team, TeamSide, Tendencies, Vec2
-from .plays import Play
+from .plays import Play, PlayOption
 
 
 POSITIONS = ("PG", "SG", "SF", "PF", "C")
@@ -20,7 +21,11 @@ class ConfigError(ValueError):
 class SimulationSetup:
     home: Team
     away: Team
-    plays: dict[TeamSide, Play]
+    playbooks: dict[TeamSide, tuple[PlayOption, ...]]
+
+    @property
+    def plays(self) -> dict[TeamSide, Play]:
+        return {side: options[0].play for side, options in self.playbooks.items()}
 
 
 def load_setup(path: str | Path) -> SimulationSetup:
@@ -35,11 +40,53 @@ def load_setup(path: str | Path) -> SimulationSetup:
         home = _team(data["teams"]["home"], TeamSide.HOME, "X")
         away = _team(data["teams"]["away"], TeamSide.AWAY, "O")
         play_data = data["plays"]
-        home_play = _play(play_data[data.get("home_play", next(iter(play_data)))])
-        away_play = _play(play_data[data.get("away_play", data.get("home_play", next(iter(play_data))))])
+        plays = {name: _play(item) for name, item in play_data.items()}
+        default_play = next(iter(plays))
+        home_playbook = _playbook(data, TeamSide.HOME, plays, default_play)
+        away_playbook = _playbook(data, TeamSide.AWAY, plays, data.get("home_play", default_play))
     except (KeyError, TypeError, IndexError, StopIteration) as error:
         raise ConfigError(f"missing or invalid field: {error}") from error
-    return SimulationSetup(home, away, {TeamSide.HOME: home_play, TeamSide.AWAY: away_play})
+    return SimulationSetup(home, away, {TeamSide.HOME: home_playbook, TeamSide.AWAY: away_playbook})
+
+
+def _playbook(
+    data: dict[str, Any],
+    side: TeamSide,
+    plays: dict[str, Play],
+    default_play: str,
+) -> tuple[PlayOption, ...]:
+    singular_field = f"{side.value}_play"
+    plural_field = f"{side.value}_plays"
+    if singular_field in data and plural_field in data:
+        raise ConfigError(f"cannot specify both {singular_field} and {plural_field}")
+    if plural_field not in data:
+        name = data.get(singular_field, default_play)
+        return (PlayOption(_named_play(plays, name, side), 1.0),)
+    entries = data[plural_field]
+    if not isinstance(entries, list) or not entries:
+        raise ConfigError(f"{plural_field} must contain at least one play")
+    options = []
+    names = set()
+    for entry in entries:
+        if not isinstance(entry, dict) or "play" not in entry or "usage" not in entry:
+            raise ConfigError(f"each {plural_field} entry must define play and usage")
+        name = entry["play"]
+        if not isinstance(name, str):
+            raise ConfigError(f"{plural_field} play must be a string")
+        if name in names:
+            raise ConfigError(f"{plural_field} contains duplicate play: {name}")
+        names.add(name)
+        usage = entry["usage"]
+        if not isinstance(usage, (int, float)) or isinstance(usage, bool) or not math.isfinite(usage) or usage <= 0:
+            raise ConfigError(f"{plural_field} usage must be a positive finite number")
+        options.append(PlayOption(_named_play(plays, name, side), float(usage)))
+    return tuple(options)
+
+
+def _named_play(plays: dict[str, Play], name: Any, side: TeamSide) -> Play:
+    if not isinstance(name, str) or name not in plays:
+        raise ConfigError(f"{side.value} playbook references unknown play: {name}")
+    return plays[name]
 
 
 def _team(data: dict[str, Any], side: TeamSide, default_symbol: str) -> Team:

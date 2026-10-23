@@ -15,6 +15,12 @@ class Play:
         return spot if attacking_right else Vec2(94.0 - spot.x, 50.0 - spot.y)
 
 
+@dataclass(frozen=True)
+class PlayOption:
+    play: Play
+    usage: float
+
+
 FIVE_OUT = Play(
     "Five Out",
     (

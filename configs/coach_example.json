@@ -1,6 +1,12 @@
 {
-  "home_play": "motion",
-  "away_play": "horns",
+  "home_plays": [
+    {"play": "motion", "usage": 0.75},
+    {"play": "horns", "usage": 0.25}
+  ],
+  "away_plays": [
+    {"play": "horns", "usage": 0.65},
+    {"play": "motion", "usage": 0.35}
+  ],
   "plays": {
     "motion": {
       "name": "Five Out Motion",
