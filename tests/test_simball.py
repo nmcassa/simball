@@ -98,6 +98,48 @@ class GameTests(unittest.TestCase):
         self.assertEqual(sequence(), sequence())
         self.assertEqual(set(sequence()), {"Five Out", "Horns"})
 
+    def test_seed_reproduces_agent_movement_variation(self) -> None:
+        def movement() -> list[tuple[float, float, float, float]]:
+            game = Game(GameConfig(seed=22))
+            return [
+                (player.reaction_time, player.route_offset, player.location.x, player.location.y)
+                for team in (game.state.home, game.state.away)
+                for player in team.players
+            ]
+
+        self.assertEqual(movement(), movement())
+
+    def test_different_seeds_vary_agent_reactions_and_routes(self) -> None:
+        first = Game(GameConfig(seed=22))
+        second = Game(GameConfig(seed=23))
+        first_variation = [(player.reaction_time, player.route_offset) for player in first.state.home.players]
+        second_variation = [(player.reaction_time, player.route_offset) for player in second.state.home.players]
+        self.assertNotEqual(first_variation, second_variation)
+
+    def test_route_variation_curves_and_converges(self) -> None:
+        game = Game(GameConfig(seed=5))
+        player = game.state.home.players[0]
+        player.location = Vec2(10, 10)
+        player.target = Vec2(30, 10)
+        player.route_offset = 2.0
+        route_target = player.route_target()
+        self.assertEqual(route_target.x, 30)
+        self.assertGreater(route_target.y, 10)
+        player.location = Vec2(29, 10)
+        self.assertLess(player.route_target().y - 10, route_target.y - 10)
+
+    def test_players_wait_for_reaction_before_moving(self) -> None:
+        game = Game(GameConfig(seed=9))
+        player = game.state.home.players[0]
+        player.location = Vec2(10, 10)
+        player.target = Vec2(30, 10)
+        player.reaction_remaining = 0.2
+        game._move_players(0.1)
+        self.assertEqual(player.location, Vec2(10, 10))
+        game._move_players(0.1)
+        game._move_players(0.1)
+        self.assertGreater(player.location.x, 10)
+
 
 class ConfigTests(unittest.TestCase):
     def test_example_loads_custom_teams_and_plays(self) -> None:

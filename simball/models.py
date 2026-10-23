@@ -58,6 +58,9 @@ class Player:
     energy: float = 1.0
     activity: str = "spacing"
     movement_modifier: float = 1.0
+    reaction_time: float = 0.0
+    reaction_remaining: float = 0.0
+    route_offset: float = 0.0
 
     @property
     def size_factor(self) -> float:
@@ -66,6 +69,15 @@ class Player:
     @property
     def speed_fps(self) -> float:
         return (8.0 + self.ratings.speed * 0.055) * (0.85 + self.energy * 0.15) * self.movement_modifier
+
+    def route_target(self) -> Vec2:
+        distance = self.location.distance_to(self.target)
+        if distance == 0:
+            return self.target
+        dx = self.target.x - self.location.x
+        dy = self.target.y - self.location.y
+        lateral = self.route_offset * min(1.0, distance / 12.0)
+        return Vec2(self.target.x - dy / distance * lateral, self.target.y + dx / distance * lateral)
 
 
 @dataclass

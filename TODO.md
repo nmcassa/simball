@@ -4,7 +4,7 @@
 
 - [ ] Separate possession logic into movement, decision, and outcome systems
 - [ ] Give every player velocity, acceleration, facing direction, and reaction time
-- [ ] Add seeded variation to player reaction timing, movement routes, and path selection so repeated plays do not produce identical agent behavior
+- [x] Add seeded variation to player reaction timing, movement routes, and path selection so repeated plays do not produce identical agent behavior
 - [ ] Prevent players from occupying the same physical space
 - [ ] Model ball travel for passes and shots instead of transferring possession instantly
 - [ ] Add deterministic tests for movement, possessions, scoring, and clock behavior

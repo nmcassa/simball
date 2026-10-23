@@ -170,7 +170,10 @@ class Game:
     def _move_players(self, dt: float) -> None:
         for team in (self.state.home, self.state.away):
             for player in team.players:
-                player.location = player.location.move_toward(player.target, player.speed_fps * dt)
+                if player.reaction_remaining > 0:
+                    player.reaction_remaining = max(0.0, player.reaction_remaining - dt)
+                else:
+                    player.location = player.location.move_toward(player.route_target(), player.speed_fps * dt)
                 player.energy = max(0.55, player.energy - dt * 0.0008)
 
     def _choose_action(self) -> None:
@@ -249,6 +252,9 @@ class Game:
                 player.has_ball = False
                 player.activity = "spacing"
                 player.movement_modifier = 1.0
+                player.reaction_time = self.rng.uniform(0.08, 0.42)
+                player.reaction_remaining = player.reaction_time
+                player.route_offset = self.rng.uniform(-2.25, 2.25)
         self.state.offense_team.players[0].has_ball = True
         self.state.shot_clock = 24.0
         self.action_cooldown = 1.8

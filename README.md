@@ -25,6 +25,8 @@ Each team can use a weighted playbook. Usage values are relative weights and do 
 
 Play names reference entries in the top-level `plays` object. A play is selected at the start of each possession, and `--seed` makes the sequence reproducible. The singular `home_play` and `away_play` fields remain supported for one-play teams.
 
+Players receive small reaction delays and route variations on every possession, preventing identical executions from following perfectly identical paths. These differences use the game's random seed, so a run remains reproducible when `--seed` is provided.
+
 Validate a configuration without running a game:
 
 ```bash
