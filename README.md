@@ -43,6 +43,14 @@ The goal is to give coaches and basketball researchers a way to test player comb
 
 The long-term priority is an accurate, data-driven simulation that can adapt to different teams, players, and coaching ideas.
 
+## Inspiration and related projects
+
+- [bball-coach](https://www.bball-coach.com/)
+- [Coach Canvas](https://use.coachcanvas.app/)
+- [BasketballGAN: Generating Basketball Play Simulation Through Sketching](https://arxiv.org/abs/1909.07088)
+
+These projects provide references for coaching workflows, play visualization, and interactive basketball simulation. Simball's focus remains reproducible, configurable agent behavior and possession-level analysis.
+
 ## Test
 
 ```bash
